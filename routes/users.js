@@ -1,18 +1,31 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 
 const User = require("../models/User");
+const Courses = require("../models/Courses");
 
-router.get("/", (req, res) => {
-    res.send("logged in");
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/users/login");
+}
+
+router.get("/", isLoggedIn, (req, res) => {
+  res.send("logged in");
 });
 
-// router.get("/admin", (req, res) => {
-//     res.send("admin logged in")
-// })
+router.get("/admin", isLoggedIn, (req, res) => {
+  // console.log(req);
+  Courses.find({}, (err, courses) => {
+    if (err) throw err;
+    // console.log(courses)
+    res.render("adminview", { user: req.user, courses: courses });
+  });
+});
 
 //login
 router.get("/login", (req, res) => {
@@ -66,42 +79,62 @@ router.post("/signup", (req, res) => {
         });
       } else {
         const newUser = new User({
-            name,
-            email,
-            password,
-            role
+          name,
+          email,
+          password,
+          role
         });
-       
-        bcrypt.genSalt(10, (err, salt) => 
-           bcrypt.hash(newUser.password, salt, (err, hash) => {
-               if(err) throw err;
-               console.log(hash);
-               //set new password
-               newUser.password = hash;
-               console.log(newUser);
-               //save user
-               newUser.save()
-               .then(user => {
-                   req.flash('success_msg', 'You are now registered and can login');
-                   res.redirect('/users/login');
-               })
-               .catch(err => console.log(err));
-           }));
+
+        bcrypt.genSalt(10, (err, salt) =>
+          bcrypt.hash(newUser.password, salt, (err, hash) => {
+            if (err) throw err;
+            console.log(hash);
+            //set new password
+            newUser.password = hash;
+            console.log(newUser);
+            //save user
+            newUser
+              .save()
+              .then(user => {
+                req.flash(
+                  "success_msg",
+                  "You are now registered and can login"
+                );
+                res.redirect("/users/login");
+              })
+              .catch(err => console.log(err));
+          })
+        );
       }
     });
   }
 });
 
-router.post("/login", (req, res, next)=>{
-    console.log(req);
-    
-    passport.authenticate('local', {
-        successRedirect: '/users/',
-        failureRedirect: '/users/signin',
+router.post("/login", (req, res, next) => {
+  // console.log(req);
+  User.findOne({ email: req.body.email }).then(data => {
+    // console.log(data);
+    if (data.role == "Student") {
+      passport.authenticate("local", {
+        successRedirect: "/users/admin",
+        failureRedirect: "/users/signin",
         failureFlash: true
-    })(req, res, next);
+      })(req, res, next);
+    } else if (data.role == "Admin") {
+      passport.authenticate("local", {
+        successRedirect: "/users/admin",
+        failureRedirect: "/users/signin",
+        failureFlash: true
+      })(req, res, next);
+    } else {
+      res.redirect("/users/login");
+    }
+  });
 });
 
-
+router.get("/logout", (req, res) => {
+  req.logout();
+  res.redirect("/users/login");
+});
 
 module.exports = router;

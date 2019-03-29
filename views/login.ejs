@@ -1,4 +1,24 @@
 <% include ./partials/header %>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">NameCom</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <span style="width: 105 0px;"></span>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/users/login"><strong>Login</strong><span class="sr-only"></span></a>
+                </li>
+                <span style="width: 30px;"></span>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/users/signup"><strong>Signup</strong><span class="sr-only"></span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 <div class="container" style="float:auto;">
     <br>
     <% include ./partials/message %>

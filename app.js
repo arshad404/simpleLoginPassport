@@ -14,6 +14,7 @@ require('./config/passport')(passport);
 
 //db config
 const User = require('./models/User');
+const Course = require('./models/Courses');
 
 // DB config
 const db = require('./config/keys').MongoURI;
@@ -51,9 +52,17 @@ app.use((req, res, next) => {
     next();
 });
 
+function isLoggedIn(req, res, next){
+    if(req.isAuthenticated()){
+        return next();
+    }
+    res.redirect("/users/login");
+}
+
 //routes
 app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
+app.use('/course', require('./routes/course'));
 
 const PORT = process.env.PORT || 5000;
 
